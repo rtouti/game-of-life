@@ -11,20 +11,29 @@
 		}
 		canvas {
 			position: absolute;
-			top: 35px;
+			top: 55px;
 			left: 50%;
 			transform: translate(-50%, 0);
 			border: 2px solid black;
 		}
 		form {
-			position: absolute;
-			left: 50%;
-			transform: translate(-50%, 0);
+			text-align: center;
+		}
+		label {
+			color: white;
 		}
 	</style>
 	<body>
 		<canvas width="500" height="500"></canvas>
-		<input type="button" value="Start!" />
+		<form>
+			<input type="button" value="Start" id="start" />
+			<input type="button" value="Pause" id="pause" />
+			<input type="button" value="Reset" id="reset" />
+			<label>Speed: </label>
+			<input type="range" min="1" max="50" value="10" id="speed"></input>
+		</form>
 	</body>
+	<script type="text/javascript" src="input.js"></script>
+	<script type="text/javascript" src="patterns.js"></script>
 	<script type="text/javascript" src="index.js"></script>
 </html>

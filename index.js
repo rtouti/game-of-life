@@ -3,11 +3,11 @@ var canvas = document.getElementsByTagName("canvas")[0],
 
 
 function Grid(width, height, cellSize){
-	this.w = width;
-	this.h = height;
+	this.w = width/cellSize;
+	this.h = height/cellSize;
 	this.cellSize = cellSize;
 	
-	this.imageData = ctx.createImageData(width*cellSize, height*cellSize);
+	this.imageData = ctx.createImageData(width, height);
 	this.pixelData = this.imageData.data;
 }
 //Update is called on the back grid
@@ -63,26 +63,14 @@ Grid.prototype.fillCell = function(x, y, value){
 		}
 	}
 }
+//Threshold is the probability that a cell is dead
 Grid.prototype.fillRandom = function(threshold){
 	var cs   = this.cellSize,
 		w    = this.w,
 		ww   = w*cs,
 		h    = this.h,
 		data = this.pixelData;
-	
-	/*for(var x = 0; x < w; x++){
-		for(var y = 0; y < h; y++){
-			if(Math.random() < threshold){
-				var index = (x+y*w)*4;
-				data[index]   = 255;
-				data[index+1] = 255;
-				data[index+2] = 255;
-				data[index+3] = 255;
-			}
-		}
-	}*/
-	//console.log(data);
-	
+
 	for(var y = 0; y < h; y++){
 		for(var x = 0; x < w; x++){
 			if(Math.random() < threshold){
@@ -99,50 +87,96 @@ Grid.prototype.fillRandom = function(threshold){
 		}
 	}
 }
+Grid.prototype.renderGrid = function(size, color, ctx){
+	var h  = this.h,
+		w  = this.w,
+		cs = this.cellSize;
 
-var backGrid  = new Grid(100, 100, 5),
-	frontGrid = new Grid(100, 100, 5);
-var grids = [frontGrid, backGrid];
+	ctx.strokeStyle = color;
+	for(var y = 0; y < h*cs; y+=size){
+		ctx.strokeRect(0, y, w*cs, size);
+	}
+	for(var x = 0; x < w*cs; x+=size){
+		ctx.strokeRect(x, 0, size, h*cs);
+	}
+}
+
+var frontGrid = new Grid(500, 500, 5),
+	backGrid  = new Grid(500, 500, 5),
+	grids = [frontGrid, backGrid];
 grids[0].fillRandom(0.5);
-console.log(grids[0].imageData);
-function loop(){
-	grids[1].update(grids[0]);
-	
-	var temp = grids[0];
-	grids[0] = grids[1];
-	grids[1] = temp;
-	
+
+document.getElementById("start").addEventListener("click", function(e){
+	running = true;
+});
+document.getElementById("pause").addEventListener("click", function(e){
+	running = false;
+});
+document.getElementById("reset").addEventListener("click", function(e){
+	grids[0].fillRandom(1.0);
+	grids[1].fillRandom(1.0);
 	ctx.putImageData(grids[0].imageData, 0, 0);
 	
-	window.requestAnimationFrame(loop);
+	running = false;
+});
+document.getElementById("speed").addEventListener("change", function(e){
+	console.log(e);
+	fps = parseInt(e.target.value);
+	
+	window.clearInterval(id);
+	id = window.setInterval(function(){
+		loop();
+	}, Math.round(1000/fps));
+});
+
+var running = true;
+var id;
+var fps = 10;
+function loop(){
+	if(Mouse.isPressed()){
+		var cs       = grids[0].cellSize,
+			mousePos = Mouse.positionInElement(canvas),
+			x        = Math.floor(mousePos.x/cs),
+			y        = Math.floor(mousePos.y/cs),
+			ww       = grids[0].w*cs;
+			//pos      = patterns.glider;
+		
+		var color = 0;
+		if(grids[0].pixelData[((x*cs)+(y*cs)*ww)*4] === 0)
+			color = 255;
+		for(var yy = y*cs; yy < y*cs+cs; yy++){
+			for(var xx = x*cs; xx < x*cs+cs; xx++){
+				var index = (xx+yy*ww)*4;
+				grids[0].pixelData[index]   = color;
+				grids[0].pixelData[index+1] = color;
+				grids[0].pixelData[index+2] = color;
+				grids[0].pixelData[index+3] = color;
+			}
+		}
+		
+		ctx.putImageData(grids[0].imageData, 0, 0);
+	}
+	
+	if(running){
+		grids[1].update(grids[0]);
+		
+		var temp = grids[0];
+		grids[0] = grids[1];
+		grids[1] = temp;
+		
+		ctx.putImageData(grids[0].imageData, 0, 0);
+	}
+	
+	//Render the grid
+	grids[0].renderGrid(5, "black", ctx);
+	
+	Mouse.update();
+	
+	//window.requestAnimationFrame(loop);
 }
-window.requestAnimationFrame(loop);
-/*window.setInterval(function(){
+//window.requestAnimationFrame(loop);
+id = window.setInterval(function(){
 	loop();
-}, 1000);*/
+}, 1000/fps);
 
 
-/*
-function reverse(array){
-	var revArray = [];
-	for(var i = array.length-1; i >= 0; i--){
-		revArray.push(array[i]);
-	}
-	
-	return revArray;
-}
-function reverseInline(array){
-	var min = 0, max = array.length-1;
-	while(min < max){
-		var temp = array[min];
-		array[min] = array[max];
-		array[max] = temp;
-		min++;
-		max--;
-	}
-	
-	return array;
-}
-console.log(reverse([0, 1, 2, 3, 4, 5]));
-console.log(reverseInline([0, 1, 2, 3, 4, 5]));
-*/
