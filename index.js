@@ -101,8 +101,8 @@ Grid.prototype.renderGrid = function(size, color, ctx){
 	}
 }
 
-var frontGrid = new Grid(500, 500, 5),
-	backGrid  = new Grid(500, 500, 5),
+var frontGrid = new Grid(500, 500, 10),
+	backGrid  = new Grid(500, 500, 10),
 	grids = [frontGrid, backGrid];
 grids[0].fillRandom(0.5);
 
@@ -168,7 +168,7 @@ function loop(){
 	}
 	
 	//Render the grid
-	grids[0].renderGrid(5, "black", ctx);
+	grids[0].renderGrid(10, "black", ctx);
 	
 	Mouse.update();
 	
