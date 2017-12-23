@@ -23,14 +23,22 @@ Grid.prototype.update = function(frontGrid){
 			for(var j = -1; j <= 1; j++){
 				for(var i = -1; i <= 1; i++){
 					if(!(i == 0 && j == 0)){
-						//Make sure the neighbor is inside the grid
-						if(x+i >= 0 && x+i < w && y+j >= 0 && y+j < h){
-							//If the cell is black (alive)
-							//We can just verify the red component since
-							//all the components have the same value (255 or 0)
-							if(frontGrid.pixelData[(((x+i)*cs)+((y+j)*cs)*ww)*4] === 0)
-								count++;
-						}
+						//Wrapping
+						var xx = x+i,
+							yy = y+j;
+						if(xx < 0)
+							xx = w-1;
+						else if(xx >= w)
+							xx = 0;
+						if(yy < 0)
+							yy = w-1;
+						else if(yy >= h)
+							yy = 0;
+						//If the cell is black (alive)
+						//We can just verify the red component since
+						//all the components have the same value (255 or 0)
+						if(frontGrid.pixelData[(((xx)*cs)+((yy)*cs)*ww)*4] === 0)
+							count++;
 					}
 				}
 			}
